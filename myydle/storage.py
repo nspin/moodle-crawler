@@ -9,43 +9,39 @@ from urllib.parse import unquote
 
 from myydle.normalize import normalize_path
 
-# store hashes hex-encoded out of lazyiness
 create_table = '''
     create table if not exists paths (
-        path varchar primary key,
-        internal_location_path varchar,
-        external_location varchar,
-        status_code integer,
+        normalized_path varchar primary key,
+        internal_location varchar, /* normalized path */
+        external_location varchar, /* normalized url */
+        failure_status_code integer,
         content_type varchar,
-        hash char(64)
+        content_hash char(64) /* hex-encoded out of lazyiness */
     )
     '''
 
 class Row(object):
 
-    def __init__(self, path,
-            internal_location_path=None,
+    def __init__(self, normalized_path,
+            internal_location=None,
             external_location=None,
-            status_code=None,
+            failure_status_code=None,
             content_type=None,
-            hash=None,
+            content_hash=None,
             ):
-        self.path = normalize_path(path)
-        self.internal_location_path = internal_location_path
+        assert normalized_path == normalize_path(normalized_path)
+        self.normalized_path = normalized_path
+        self.internal_location = internal_location
         self.external_location = external_location
-        self.status_code = status_code
+        self.failure_status_code = failure_status_code
         self.content_type = content_type
-        self.hash = hash
+        self.content_hash = content_hash
 
     def __iter__(self):
-        yield self.path
-        yield self.internal_location_path
-        yield self.external_location
-        yield self.status_code
-        yield self.content_type
-        yield self.hash
+        for f in Row._fields:
+            yield getattr(self, f)
 
-    _fields = ('path', 'internal_location_path', 'external_location', 'status_code', 'content_type', 'hash')
+    _fields = ('normalized_path', 'internal_location', 'external_location', 'failure_status_code', 'content_type', 'content_hash')
 
 class Storage():
 
@@ -59,20 +55,20 @@ class Storage():
         self.conn.close()
 
     # assumes no loops
-    def resolve_path(self, path):
+    def resolve_path(self, normalized_path):
         while True:
-            row = self.get_row_by_path(normalize_path(path))
-            if row is None or row.internal_location_path is None:
+            row = self.get_row_by_path(normalized_path)
+            if row is None or row.internal_location is None:
                 return row
-            path = row.internal_location_path
+            normalized_path = row.internal_location
 
     # assumes no loops
-    def unresolve_path(self, path):
+    def unresolve_path(self, normalized_path):
         def go(p):
-            for row in self.get_rows_by_internal_location_path(p):
-                yield row.path
-                yield from go(row.path)
-        return frozenset(go(normalize_path(path)))
+            for row in self.get_rows_by_internal_location(p):
+                yield row.normalized_path
+                yield from go(row.normalized_path)
+        return frozenset(go(normalized_path))
 
     def put_row(self, row):
         q = 'insert or replace into paths ({}) values ({})'.format(','.join(Row._fields), ','.join('?' for _ in Row._fields))
@@ -80,17 +76,17 @@ class Storage():
         cur.execute(q, tuple(row))
         self.conn.commit()
 
-    def get_row_by_path(self, path):
+    def get_row_by_path(self, normalized_path):
         cur = self.conn.cursor()
-        it = cur.execute('select * from paths where path = ?', (normalize_path(path),))
+        it = cur.execute('select * from paths where normalized_path = ?', (normalized_path,))
         try:
             return Row(*next(it))
         except StopIteration:
             return None
 
-    def get_rows_by_path_pred(self, pred):
+    def get_rows_by_path_where(self, pred):
         for row in self.get_all_rows():
-            if pred(row.path):
+            if pred(row.normalized_path):
                 yield row
 
     def get_all_rows(self):
@@ -98,21 +94,21 @@ class Storage():
         it = cur.execute('select * from paths')
         return itertools.starmap(Row, it)
 
-    def blob_path(self, hash):
-        return os.path.join(self.blob_dir, hash)
+    def blob_path(self, content_hash):
+        return os.path.join(self.blob_dir, content_hash)
 
     def put_blob(self, blob):
         h = hashlib.new('sha256')
         h.update(blob)
-        hash = hexlify(h.digest()).decode('ascii')
-        path = self.blob_path(hash)
+        content_hash = hexlify(h.digest()).decode('ascii')
+        path = self.blob_path(content_hash)
         if not os.path.isfile(path):
             with open(path, 'wb') as f:
                 f.write(blob)
-        return hash
+        return content_hash
 
-    def get_blob(self, hash, binary=True):
-        path = self.blob_path(hash)
+    def get_blob(self, content_hash, binary=True):
+        path = self.blob_path(content_hash)
         if os.path.isfile(path):
             mode = 'rb' if binary else 'r'
             with open(path, mode) as f:

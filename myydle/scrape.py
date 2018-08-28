@@ -24,11 +24,10 @@ def scrape_html(doc):
     # need to html unescape? depends on bs4 api
     def paths(urls):
         for _url in urls:
-            if _url is not None:
+            if _url is not None and len(_url) > 0:
                 url = normalize_url(_url)
                 if url.startswith(URL_PREFIX):
                     path = url[len(URL_PREFIX):]
-                    assert path == normalize_path(path)
                     yield path
     ret = set()
     for path in paths(yes()):

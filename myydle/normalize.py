@@ -2,13 +2,19 @@ import re
 import unicodedata
 from urllib.parse import quote, quote_plus, unquote, urlsplit, urlunsplit
 
+__all__ = [
+    'normalize_path',
+    'normalize_url',
+    ]
+
+# Yuck. This code is taken from a few different sources.
 
 def normalize_path(s, charset='utf-8'):
     dummy = 'https://foo.bar'
     return normalize_url(dummy + s)[len(dummy):]
 
 def normalize_url(s):
-    return _normalize_url(__normalize_url(s))
+    return _normalize_url(__normalize_url(s)).split('#')[0]
 
 def _normalize_url(s, charset='utf-8'):
     scheme, netloc, path, qs, anchor = urlsplit(s)
