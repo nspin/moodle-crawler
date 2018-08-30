@@ -28,8 +28,10 @@ def guess_extension(content_type):
         return ext
     # these aren't inluded in the mimtypes module
     extras = {
+        'application/x-javascript': '.js',
         'audio/mp3': '.mp3',
         'audio/wav': '.wav',
+        'text/rtf': '.rtf',
         }
     return extras[mty]
 
