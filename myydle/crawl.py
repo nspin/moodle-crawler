@@ -1,6 +1,3 @@
-from requests import Session
-
-from myydle.auth import do_auth
 from myydle.filter import keep
 from myydle.normalize import get_normalized_path, normalize_path
 from myydle.scrape import scrape_html, scrape_css
@@ -15,10 +12,7 @@ def is_redirect(status_code):
 def ensure_not_logged_out(resp):
     assert not is_redirect(resp.status_code) or resp.headers['Location'] != 'https://moodle.carleton.edu/login/index.php'
 
-def crawl(st, username, password):
-
-    sess = Session()
-    do_auth(sess, username, password)
+def crawl(st, sess):
 
     q = UniQ()
     q.en('/')

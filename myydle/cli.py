@@ -1,6 +1,9 @@
 import os
+import sys
 from argparse import ArgumentParser
+from requests import Session
 
+from myydle.auth import do_auth
 from myydle.crawl import crawl
 from myydle.archive import archive
 from myydle.storage import Storage
@@ -20,8 +23,9 @@ INDEX = '''
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('username')
-    parser.add_argument('password')
+    parser.add_argument('-c', '--cookie', help='"MoodleSession" cookie')
+    parser.add_argument('-u', '--username')
+    parser.add_argument('-p', '--password')
     parser.add_argument('--crawl-dir', default='crawl')
     parser.add_argument('--archive-dir', default='archive')
     args = parser.parse_args()
@@ -33,8 +37,18 @@ def main():
 
     os.makedirs(args.archive_dir, exist_ok=True)
 
+    sess = Session()
+
+    if args.cookie is not None:
+        sess.cookies['MoodleSession'] = args.cookie
+    else:
+        if args.username is None or args.password is None:
+            sys.exit('must supply cookie or both username and password')
+        print('authenticating')
+        do_auth(sess, args.username, args.password)
+
     print('crawling')
-    crawl(st, args.username, args.password)
+    crawl(st, sess)
 
     print('archiving')
     archive(st, os.path.join(args.archive_dir, 'files'))
