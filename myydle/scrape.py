@@ -39,7 +39,7 @@ import_re = re.compile(r'@import url\(([^\)]*)\)')
 def scrape_css(path, css):
     paths = set()
     for m in import_re.finditer(css):
-        imp = m.groups(1)
+        imp = m.group(1)
         if re.compile('(https?:)?//').match(imp) is None:
             paths.add(normalize_path(urllib.parse.urljoin(path, imp)))
     return paths
