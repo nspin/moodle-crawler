@@ -20,8 +20,8 @@ INDEX = '''
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('username')
-    parser.add_argument('password')
+    parser.add_argument('cookie_key')
+    parser.add_argument('cookie_value')
     parser.add_argument('--crawl-dir', default='crawl')
     parser.add_argument('--archive-dir', default='archive')
     args = parser.parse_args()
@@ -34,7 +34,7 @@ def main():
     os.makedirs(args.archive_dir, exist_ok=True)
 
     print('crawling')
-    crawl(st, args.username, args.password)
+    crawl(st, args.cookie_key, args.cookie_value)
 
     print('archiving')
     archive(st, os.path.join(args.archive_dir, 'files'))

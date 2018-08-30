@@ -15,10 +15,10 @@ def is_redirect(status_code):
 def ensure_not_logged_out(resp):
     assert not is_redirect(resp.status_code) or resp.headers['Location'] != 'https://moodle.carleton.edu/login/index.php'
 
-def crawl(st, username, password):
+def crawl(st, cookie_key, cookie_value):
 
     sess = Session()
-    do_auth(sess, username, password)
+    do_auth(sess, cookie_key, cookie_value)
 
     q = UniQ()
     q.en('/')
