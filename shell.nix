@@ -5,7 +5,7 @@ with import <nixpkgs> {}; stdenv.mkDerivation {
     python3
     python3Packages.requests
     python3Packages.beautifulsoup4
-    python3Packages.flask
+    # python3Packages.flask
   ];
-  shellHook = "export PYTHONPATH=.:$PYTHONPATH";
+  # shellHook = "export PYTHONPATH=.:$PYTHONPATH";
 }

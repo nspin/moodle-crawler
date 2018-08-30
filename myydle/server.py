@@ -1,14 +1,9 @@
+import os.path
 from urllib.parse import unquote
 from flask import Flask, Response, g, request, redirect, send_file
+
 from myydle.storage import Storage
 from myydle.normalize import normalize_path
-
-# TODO improve
-import os.path
-def in_dir(ref, fname):
-    return os.path.join(os.path.dirname(os.path.realpath(ref)), fname)
-DB = in_dir(__file__, '../db.sqlite')
-BLOB_DIR = in_dir(__file__, '../blobs')
 
 REMOTE_URL_PREFIX = 'https://moodle.carleton.edu'
 
@@ -44,7 +39,10 @@ def just_path():
 
 def get_st():
     if not hasattr(g, 'st'):
-        g.st = Storage(DB, BLOB_DIR)
+        g.st = Storage(
+            os.path.join(app.config['CRAWL_DIR'], 'db.sqlite'),
+            os.path.join(app.config['CRAWL_DIR'], 'blobs'),
+            )
     return g.st
 
 @app.teardown_appcontext
@@ -52,9 +50,18 @@ def close_st(error):
     if hasattr(g, 'st'):
         g.st.close()
 
-if __name__ == '__main__':
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('crawl_dir')
+    args = parser.parse_args()
+
+    app.config['CRAWL_DIR'] = args.crawl_dir
+
     app.run(
         host='127.0.0.1',
         port=13337,
         debug=True,
         )
+
+if __name__ == '__main__':
+    main()
