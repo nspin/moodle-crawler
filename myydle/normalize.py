@@ -5,14 +5,14 @@ import urllib.parse
 def get_normalized_path(url):
     m = re.compile('(https?:)?//moodle.carleton.edu(?P<path>.*)').fullmatch(url)
     if m is not None:
-        return normalize_path(m['path'])
+        return normalize_path(m.group('path'))
 
 def get_normalized_path_with_fragment(url):
     m = re.compile('(https?:)?//moodle.carleton.edu(?P<path>.*)').fullmatch(url)
     if m is None:
         return None, None
     else:
-        return normalize_path_with_fragment(m['path'])
+        return normalize_path_with_fragment(m.group('path'))
 
 def normalize_path(path):
     return normalize_path_with_fragment(path)[0]
