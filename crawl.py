@@ -1,11 +1,11 @@
 from requests import Session
 
-from myydle.filter import keep
-from myydle.uniq import UniQ
 from myydle.auth import do_auth
-from myydle.storage import Storage, Row
+from myydle.filter import keep
+from myydle.normalize import get_normalized_path, normalize_path
 from myydle.scrape import scrape_html, scrape_css
-from myydle.normalize import normalize_url, normalize_path
+from myydle.storage import Storage, Row
+from myydle.uniq import UniQ
 
 from config import USERNAME, PASSWORD
 
@@ -14,13 +14,12 @@ URL_PREFIX = 'https://moodle.carleton.edu'
 def is_redirect(status_code):
     return status_code in (301, 302, 303, 307, 308)
 
-def internal_path(url):
-    if url.startswith(URL_PREFIX):
-        return url[len(URL_PREFIX):]
+def ensure_not_logged_out(resp):
+    assert not is_redirect(resp.status_code) or resp.headers['Location'] != 'https://moodle.carleton.edu/login/index.php'
 
 st = Storage('db.sqlite', 'blobs')
-s = Session()
-do_auth(s, USERNAME, PASSWORD)
+sess = Session()
+do_auth(sess, USERNAME, PASSWORD)
 
 q = UniQ()
 q.en('/')
@@ -28,19 +27,16 @@ q.en('/')
 while not q.is_empty():
 
     path = q.de()
-    # print(path)
     assert path == normalize_path(path)
 
     row = st.get_row_by_path(path)
     if row is None:
-        r = s.get(URL_PREFIX + path, allow_redirects=False)
-        assert r.url == URL_PREFIX + path
-        assert not is_redirect(r.status_code) or r.headers['Location'] != 'https://moodle.carleton.edu/login/index.php'
+        r = sess.get(URL_PREFIX + path, allow_redirects=False)
+        ensure_not_logged_out(r)
 
         if is_redirect(r.status_code):
             location = r.headers['Location']
-            assert 'login' not in location
-            internal_location = internal_path(location)
+            internal_location = get_normalized_path(location)
             if internal_location is None:
                 row = Row(path, external_location=location)
             else:

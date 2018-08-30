@@ -4,16 +4,12 @@ import hashlib
 import sqlite3
 import itertools
 from binascii import hexlify
-from collections import namedtuple
-from urllib.parse import unquote
-
-from myydle.normalize import normalize_path
 
 create_table = '''
     create table if not exists paths (
         normalized_path varchar primary key,
         internal_location varchar, /* normalized path */
-        external_location varchar, /* normalized url */
+        external_location varchar, /* url */
         failure_status_code integer,
         content_type varchar,
         content_hash char(64) /* hex-encoded out of lazyiness */
@@ -29,7 +25,6 @@ class Row(object):
             content_type=None,
             content_hash=None,
             ):
-        assert normalized_path == normalize_path(normalized_path)
         self.normalized_path = normalized_path
         self.internal_location = internal_location
         self.external_location = external_location

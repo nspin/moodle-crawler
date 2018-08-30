@@ -22,19 +22,19 @@ def handle(_):
     print(just_path(), row)
     if row is None:
         return 'not found: "{}"'.format(just_path()), 404
-    if row.internal_location_path is not None:
-        return redirect(row.internal_location_path)
+    if row.internal_location is not None:
+        return redirect(row.internal_location)
     elif row.external_location is not None:
-        return redirect(external_location)
-    elif row.hash is not None:
+        return redirect(row.external_location)
+    elif row.content_hash is not None:
         mimetype = row.content_type.split(';', 1)[0]
         if mimetype in ('text/html', 'text/css', 'text/javascript'):
-            content = st.get_blob(row.hash, binary=False).replace(REMOTE_URL_PREFIX, '')
+            content = st.get_blob(row.content_hash, binary=False).replace(REMOTE_URL_PREFIX, '')
             return Response(content, mimetype=mimetype)
         else:
-            return send_file(st.blob_path(row.hash), mimetype=mimetype)
-    elif row.status_code is not None:
-        return str(row), row.status_code
+            return send_file(st.blob_path(row.content_hash), mimetype=mimetype)
+    elif row.failure_status_code is not None:
+        return str(row), row.failure_status_code
 
 def just_path():
     url = request.url.replace('%2F', '/') # hack: different quoting behavior between crawler and flask

@@ -1,13 +1,11 @@
 import re
 import html
-from urllib.parse import urlparse, urlunparse, urljoin
+import urllib.parse
 from bs4 import BeautifulSoup
 from requests import PreparedRequest
 
 from myydle.filter import keep
-from myydle.normalize import normalize_url, normalize_path
-
-URL_PREFIX = 'https://moodle.carleton.edu'
+from myydle.normalize import normalize_path, get_normalized_path
 
 def scrape_html(doc):
     soup = BeautifulSoup(doc, 'html.parser')
@@ -23,11 +21,10 @@ def scrape_html(doc):
             yield tag.get('href')
     # need to html unescape? depends on bs4 api
     def paths(urls):
-        for _url in urls:
-            if _url is not None and len(_url) > 0:
-                url = normalize_url(_url)
-                if url.startswith(URL_PREFIX):
-                    path = url[len(URL_PREFIX):]
+        for url in urls:
+            if url is not None and len(url) > 0:
+                path = get_normalized_path(url)
+                if path is not None:
                     yield path
     ret = set()
     for path in paths(yes()):
@@ -39,10 +36,10 @@ def scrape_html(doc):
 
 import_re = re.compile(r'@import url\(([^\)]*)\)')
 
-def scrape_css(path, doc):
+def scrape_css(path, css):
     paths = set()
-    for m in import_re.finditer(doc):
+    for m in import_re.finditer(css):
         imp = m[1]
-        if not imp.startswith('http') and not imp.startswith('//'):
-            paths.add(normalize_path(urljoin(path, imp)))
+        if re.compile('(https?:)?//').match(imp) is None:
+            paths.add(normalize_path(urllib.parse.urljoin(path, imp)))
     return paths
