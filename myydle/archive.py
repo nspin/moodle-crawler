@@ -77,7 +77,7 @@ import_re = re.compile(r'@import url\((?P<imp>[^\)]*)\)')
 
 def patch_css(st, path, css):
     def repl(m):
-        imp = m['imp']
+        imp = m.group('imp')
         if re.compile('(https?:)?//').match(imp) is None:
             new = resolve_path(st, urllib.parse.urljoin(path, imp))
         else:
