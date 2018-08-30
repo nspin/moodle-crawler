@@ -34,7 +34,7 @@ def main():
     os.makedirs(args.archive_dir, exist_ok=True)
 
     print('crawling')
-    # crawl(st, args.username, args.password)
+    crawl(st, args.username, args.password)
 
     print('archiving')
     archive(st, os.path.join(args.archive_dir, 'files'))
