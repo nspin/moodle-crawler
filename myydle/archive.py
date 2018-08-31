@@ -30,6 +30,7 @@ def guess_extension(content_type):
     extras = {
         'application/x-javascript': '.js',
         'audio/mp3': '.mp3',
+        'audio/mp4': '.mp4', # moodle's fault
         'audio/wav': '.wav',
         'text/rtf': '.rtf',
         }
