@@ -19,7 +19,7 @@ Browse the archive by opening `ARCHIVE_DIR/index.html` in a browser.
 ## Usage
 
 ```
-usage: cli.py [-h] [--crawl-dir CRAWL_DIR] [--archive-dir ARCHIVE_DIR] username password
+./myydle.sh [-h] [--crawl-dir CRAWL_DIR] [--archive-dir ARCHIVE_DIR] username password
 
 positional arguments:
   username
@@ -30,3 +30,9 @@ optional arguments:
   --crawl-dir CRAWL_DIR
   --archive-dir ARCHIVE_DIR
 ```
+
+## Dependencies
+
+Tested with Python 3.6.4 and Python 3.4.4
+
+Requires `requests` and `beautifulsoup4`
