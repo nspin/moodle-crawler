@@ -18,15 +18,26 @@ Browse the archive by opening `ARCHIVE_DIR/index.html` in a browser.
 
 ## Usage
 
-```
-./myydle.sh [-h] [--crawl-dir CRAWL_DIR] [--archive-dir ARCHIVE_DIR] username password
+A command line interface is provided in `myydle.cli`.
+`myydle.sh` is a shell script for convenience that calls that module.
 
-positional arguments:
-  username
-  password
+You can either provide your username and password, or an appropriate session cookie.
+If your account has 2FA enabled, you will need to use the cookie route.
+The cookie argument is the value of the `MoodleSession` cookie.
+It should be a string of letters.
+You can get a cookie by logging in in your browser, and copying it using the developer tools in your browser.
+Ask me if you need help.
+
+```
+./myydle.sh [-h] [-c COOKIE] [-u USERNAME] [-p PASSWORD]
+              [--crawl-dir CRAWL_DIR] [--archive-dir ARCHIVE_DIR]
 
 optional arguments:
   -h, --help            show this help message and exit
+  -c COOKIE, --cookie COOKIE
+                        "MoodleSession" cookie
+  -u USERNAME, --username USERNAME
+  -p PASSWORD, --password PASSWORD
   --crawl-dir CRAWL_DIR
   --archive-dir ARCHIVE_DIR
 ```
