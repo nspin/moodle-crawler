@@ -33,6 +33,8 @@ def guess_extension(content_type):
         'audio/mp4': '.mp4', # moodle's fault
         'audio/wav': '.wav',
         'text/rtf': '.rtf',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
         }
     return extras[mty]
 
