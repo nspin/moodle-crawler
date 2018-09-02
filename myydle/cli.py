@@ -13,10 +13,10 @@ INDEX = '''
 <html>    
   <head>      
     <title>redirecting...</title>      
-    <meta http-equiv="refresh" content="0;URL='files/X-my-.html'" />    
+    <meta http-equiv="refresh" content="0;URL='files/{entry}'" />    
   </head>    
   <body>
-    <p>start here: <a href="files/X-my-.html">files/X-my-.html</a></p>
+    <p>start here: <a href="files/{entry}">files/{entry}</a></p>
   </body>  
 </html>    
 '''
@@ -51,10 +51,10 @@ def main():
     crawl(st, sess)
 
     print('archiving')
-    archive(st, os.path.join(args.archive_dir, 'files'))
+    entry = archive(st, os.path.join(args.archive_dir, 'files'))
 
     with open(os.path.join(args.archive_dir, 'index.html'), 'w') as f:
-        f.write(INDEX)
+        f.write(INDEX.format(entry=entry))
 
     print('archive complete')
     print('{} contains the raw moodle archive. you can remove it, or keep it just in case.'.format(args.crawl_dir))
